@@ -1,0 +1,10 @@
+name: matchingexplorer
+title:
+username: picat
+account: picat
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 12433917
+bundleId: 8984446
+url: https://picat.shinyapps.io/matchingexplorer/
+version: 1
