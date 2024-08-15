@@ -332,7 +332,9 @@ ui <- fluidPage(
                                  "2024 Simulation 4" = "4",
                                  "2024 Simulation 5" = "5",
                                  "2024 Simulation 6" = "6",
-                                 "2023 Affectation réelle" = "2023"))
+                                 "2023 Affectation réelle" = "2023")),
+      numericInput("rangECN2024", "Entre ton rang des ECN 2024", value = 1),
+      actionButton("computeR2C", "Calcule ton rang R2C")
     ),
     
     mainPanel(
@@ -393,7 +395,7 @@ ui <- fluidPage(
 <p>J'ai utilisé un produit en croix pour dépasser partiellement la première limite mais je n'ai pas eu d'idée simple et réalisable avec les données à ma disposition pour s'attaquer à la deuxième...</p>
 
 <h2>Crédits</h2>
-<p>Application ShinyApp codée avec l'aide de ChatGPT sur RStudios avec les packages <code>dplyr</code> et <code>ggplot2</code>.</p>
+<p>Application ShinyApp codée avec l'aide de ChatGPT sur RStudios avec les packages <code>dplyr</code> et <code>ggplot2</code>. Vous pouvez trouver l'intégralité du code sur <a href='https://github.com/NekoSama8723/matching-explorer-2024' target='_blank'>GitHub</a>.</p>
 <p>J'écris du contenu en lien avec les études de médecine sur <a href='https://picat.fr/teaching/teaching-main.html' target='_blank'>mon site internet</a> et j'ai <a href='https://buymeacoffee.com/leopicat' target='_blank'>un lien BuyMeACoffee</a> si vous voulez encourager ma procrastination.</p>
 "
                  )
@@ -404,7 +406,7 @@ ui <- fluidPage(
 )
 
 # remplit les données de l'interface
-server <- function(input, output) {
+server <- function(input, output, session) {
   # sélectionne les tours voulus
   datasetInput <- reactive({
     data_main %>% filter(Tour == input$dataset_reference)
@@ -443,12 +445,18 @@ server <- function(input, output) {
              subtitle = "Rang limite")
   })
   
-  # output$valueRangLimiteAdapté <- renderValueBox({
-  #   data <- datasetInput()
-  #   rangLimite <- (data %>% filter(VilleShort == input$city & SpécialitéShort == input$specialty))$RangLimite
-  #   valueBox(value = round(rangLimite * 7423 / 9727),
-  #            subtitle = "Rang limite adapté")
-  # })
+  output$valueRangLimiteAdapté <- renderValueBox({
+    data <- datasetInput()
+    rangLimite <- (data %>% filter(VilleShort == input$city & SpécialitéShort == input$specialty))$RangLimite
+    valueBox(value = round(rangLimite * 7423 / 9727),
+             subtitle = "Rang limite adapté")
+  })
+  
+  observeEvent(input$computeR2C, {
+    rangR2C <- round(input$rangECN2024 * 7423 / 9727)
+    
+    updateNumericInput(session, "rangECN2024", value = rangR2C)
+  })
   
   # remplit l'onglet Spécialité
   output$plot1_specialty <- renderPlot({
