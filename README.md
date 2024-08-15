@@ -6,7 +6,7 @@ Matching Explorer 2024 est une application Shiny qui permet de visualiser les ch
 
 ## Et plus encore
 
-Je publie d'autres contenus en lien avec les études de médecine sur mon [site interne](picat.fr) !
+Je publie d'autres contenus en lien avec les études de médecine sur mon [site internet](picat.fr) !
 
 ## Supporter
 
