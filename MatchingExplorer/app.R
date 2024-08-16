@@ -3,6 +3,7 @@ library(shinydashboard)
 library(ggplot2)
 library(dplyr)
 library(rsconnect)
+library(shinythemes)
 
 # charge les données
 data_2024_1 <- read.csv(file = "simulation-tour-1.csv", header = F)
@@ -306,8 +307,11 @@ cities <- sort(c(
 
 # mise en forme de l'interface
 ui <- fluidPage(
-  titlePanel("Matching Explorer 2024"),
   
+  theme = shinytheme("flatly"),
+  
+  navbarPage("Matching Explorer 2024",
+             tabPanel("Exploration",
   sidebarLayout(
     # barre latérale pour choisir les données à afficher
     sidebarPanel(
@@ -369,41 +373,51 @@ ui <- fluidPage(
                  DT::dataTableOutput("table2_evolution")),
         # affiche les données brutes du tour de référence
         tabPanel("Données brutes",
-                 DT::dataTableOutput("table1_raw")),
+                                     DT::dataTableOutput("table1_raw"))
+                          )
+                        )
+                      )),
         # donne des détails sur le projet
         tabPanel("À propos",
-                 HTML(
-                   "<h2>Mise à jour</h2>
-<p>Dernière mise à jour le samedi 10 août 2024. Je ferai mon possible pour ajouter les tours suivants des simulations.</p>
-
-<h2>Helth</h2>
-<p>La période actuelle est particulièrement difficile pour certain·e·s. N'hésitez pas à demander de l'aide si vous en ressenter le besoin. <a href='https://www.nightline.fr/soutien-etudiant' target='_blank'>Ce site</a> recense un certain nombre de service gratuit.</p>
-
-<h2>Méthodologie</h2>
-<p>Si il reste des places non pourvues, le rang limite n'est pas interprétable. Dans les versions précédentes, pour les postes non pourvus, je fixais le rang limite au nombre de place disponible (7689). Cependant, l'application du CNG affiche des rangs limites supérieurs à ce nombre. Je ne sais pas trop à quoi c'est dû (peut-être les CESP ?). Dans le doute, je n'effectue plus cette correction.</p>
-<p>J'ai utilisé un produit en croix pour adapter les rangs limites de 2023, ce qui fait l'hypothèse que les étudiant·e·s manquants se seraient équitablement réparti·e·s dans notre classement (hypothèse sûrement un peu fausse qui contribue à surestimer les rangs limites 2023). Une autre technique serait de prendre le rang du x-ième pris en 2023 (x étant le nombre de postes en 2024). Je verrais si je prends le temps de l'implémenter. Cela conduirait peut-être à une sous-estimation des rangs limites.</p>
-
-<h2>Warning</h2>
-<p>Il y a potentiellement des erreurs de codage, que ce soit dans la récupération, le traitement, ou l'affichage des données. La source la plus fiable reste l'application du CNG.</p>
-
-<h2>Interprétation</h2>
-<p>Les rangs 2023 sont difficilement comparables avec ceux de cette année pour au moins 2 raisons :</p>
+                      h2("Crédits"),
+                      p(style = "text-align: justify;",
+                        HTML("Application ShinyApp codée avec l'aide de ChatGPT sur RStudio avec les packages <code>dplyr</code> et <code>ggplot2</code>. Vous pouvez trouver l'intégralité du code sur <a href='https://github.com/NekoSama8723/matching-explorer-2024' target='_blank'>GitHub</a>.")
+                      ),
+                      
+                      p(style = "text-align: justify;",
+                        HTML("J'écris du contenu en lien avec les études de médecine sur <a href='https://picat.fr/teaching/teaching-main.html' target='_blank'>mon site internet</a> et j'ai <a href='https://buymeacoffee.com/leopicat' target='_blank'>un lien BuyMeACoffee</a> si vous voulez encourager ma procrastination.")
+                      ),
+                      
+                      h2("Mise à jour"),
+                      p(style = "text-align: justify;",
+                        "Dernière mise à jour le vendredi 16 août 2024."
+                        ),
+                      
+                      h2("Helth"),
+                      p(style = "text-align: justify;",
+                        HTML("La période actuelle est particulièrement difficile pour certain·e·s. N'hésitez pas à demander de l'aide si vous en ressenter le besoin. <a href='https://www.nightline.fr/soutien-etudiant' target='_blank'>Ce site</a> recense un certain nombre de service gratuit.")
+                        ),
+                      
+                      h2("Méthodologie"),
+                      p(style = "text-align: justify;",
+                        "Si il reste des places non pourvues, le rang limite n'est pas interprétable. Dans les versions précédentes, pour les postes non pourvus, je fixais le rang limite au nombre de place disponible (7689). Cependant, l'application du CNG affiche des rangs limites supérieurs à ce nombre. Je ne sais pas trop à quoi c'est dû (peut-être les CESP ?). Dans le doute, je n'effectue plus cette correction."
+                        ),
+                      p(style = "text-align: justify;",
+                        HTML("Les rangs 2023 sont difficilement comparables avec ceux de cette année pour au moins 2 raisons :
 <ul>
   <li>il y a eu une réduction des postes ;</li>
   <li>les classements 2024 incluent des coefficients et ne sont donc pas directement transposables en classement 2023.</li>
-</ul>
-<p>J'ai utilisé un produit en croix pour dépasser partiellement la première limite mais je n'ai pas eu d'idée simple et réalisable avec les données à ma disposition pour s'attaquer à la deuxième...</p>
-
-<h2>Crédits</h2>
-<p>Application ShinyApp codée avec l'aide de ChatGPT sur RStudios avec les packages <code>dplyr</code> et <code>ggplot2</code>. Vous pouvez trouver l'intégralité du code sur <a href='https://github.com/NekoSama8723/matching-explorer-2024' target='_blank'>GitHub</a>.</p>
-<p>J'écris du contenu en lien avec les études de médecine sur <a href='https://picat.fr/teaching/teaching-main.html' target='_blank'>mon site internet</a> et j'ai <a href='https://buymeacoffee.com/leopicat' target='_blank'>un lien BuyMeACoffee</a> si vous voulez encourager ma procrastination.</p>
-"
+                      </ul>")
+                      ),
+                      p(style = "text-align: justify;",
+                        "J'ai donc utilisé un produit en croix pour adapter les rangs limites de 2023 (en utilisant le pourcentage de réductions pour chaque poste et non le pourcentage global). Je fais par conséquent l'hypothèse que les étudiant·e·s manquants se seraient équitablement réparti·e·s dans notre classement (hypothèse sûrement un peu fausse qui contribue à surestimer les rangs limites 2023). Une autre technique serait de prendre le rang du x-ième pris en 2023 (x étant le nombre de postes en 2024). Elle n'est pas implémentée pour le moment. Cela conduirait peut-être à une sous-estimation des rangs limites."
+                        ),
+                      
+                      h2("Warning"),
+                      p(style = "text-align: justify;",
+                        "Il y a potentiellement des erreurs de codage, que ce soit dans la récupération, le traitement, ou l'affichage des données. La source la plus fiable reste l'application du CNG. Ne vous basez pas sur cette application si vous participez au matching 2024 !"
                  )
-        )
-      )
-    )
-  )
-)
+)))
 
 # remplit les données de l'interface
 server <- function(input, output, session) {
