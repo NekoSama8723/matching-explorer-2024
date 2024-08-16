@@ -484,7 +484,7 @@ server <- function(input, output, session) {
   
   output$table_specialty <- DT::renderDataTable({
     data <- datasetInput()
-    data %>% filter(SpécialitéShort == input$specialty) %>% select(Ville, VilleShort, RangLimite) %>%
+    data %>% filter(SpécialitéShort == input$specialty) %>% select(Ville, VilleShort, RangLimite, Total, Disponible) %>%
       rename(`Code ville` = VilleShort) %>%
       rename(`Rang limite` = RangLimite)
   })
@@ -524,7 +524,7 @@ server <- function(input, output, session) {
   
   output$table_city <- DT::renderDataTable({
     data <- datasetInput()
-    data %>% filter(VilleShort == input$city) %>% select(Spécialité, SpécialitéShort, RangLimite) %>%
+    data %>% filter(VilleShort == input$city) %>% select(Spécialité, SpécialitéShort, RangLimite, Total, Disponible) %>%
       rename(`Code spécialité` = SpécialitéShort) %>%
       rename(`Rang limite` = RangLimite)
   })
@@ -566,7 +566,7 @@ server <- function(input, output, session) {
     data_main %>% 
       filter(VilleShort == input$city & SpécialitéShort == input$specialty) %>%
       filter(Tour != 2023) %>%
-      select(Ville, Spécialité, Tour, RangLimite) %>%
+      select(Ville, Spécialité, Tour, RangLimite, Total, Disponible) %>%
       rename(`Rang limite` = RangLimite)
   })
   
@@ -586,8 +586,8 @@ server <- function(input, output, session) {
       filter(SpécialitéShort == input$specialty) %>%
       filter(Tour != 2023) %>%
       group_by(Tour) %>%
-      summarise(Spécialité = input$specialty, RangLimiteMax = max(RangLimite, na.rm = T)) %>%
-      rename(`Rang limite` = RangLimite)
+      summarise(Spécialité = input$specialty, RangLimiteMax = max(RangLimite, na.rm = T), Total = sum(Total, na.rm = T), Disponible = sum(Disponible, na.rm = T)) %>%
+      rename(`Rang limite` = RangLimiteMax)
   })
   
   # remplit l'onglet Données brutes
