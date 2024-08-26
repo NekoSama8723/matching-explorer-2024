@@ -12,6 +12,7 @@ data_2024_3 <- read.csv(file = "simulation-tour-3.csv", header = F)
 data_2024_4 <- read.csv(file = "simulation-tour-4.csv", header = F)
 data_2024_5 <- read.csv(file = "simulation-tour-5.csv", header = F)
 data_2024_6 <- read.csv(file = "simulation-tour-6.csv", header = F)
+data_2024_blanc_1 <- read.csv(file = "simulation-tour-blanc-1.csv", header = F)
 data_2023 <- read.csv(file = "rang-limites-2023.csv", header = F)
 
 nb_poste_2024 = 7689
@@ -217,13 +218,17 @@ data_2024_5_clean <- clean_data_2024(data_2024_5) %>%
 data_2024_6_clean <- clean_data_2024(data_2024_6) %>%
   mutate(Tour = 6)
 
+data_2024_blanc_1_clean <- clean_data_2024(data_2024_blanc_1) %>%
+  mutate(Tour = 7)
+
 data_main <- rbind(data_2023_clean, 
                    data_2024_1_clean, 
                    data_2024_2_clean, 
                    data_2024_3_clean, 
                    data_2024_4_clean,
                    data_2024_5_clean,
-                   data_2024_6_clean)
+                   data_2024_6_clean,
+                   data_2024_blanc_1_clean)
 
 # prépare des listes pour les codes de villes et spécialités
 specialties <- sort(c(
@@ -312,73 +317,75 @@ ui <- fluidPage(
   
   navbarPage("Matching Explorer 2024",
              tabPanel("Exploration",
-  sidebarLayout(
-    # barre latérale pour choisir les données à afficher
-    sidebarPanel(
-      selectInput("dataset_reference", "Choisis un tour de référence",
-                  choices = list("2024 Simulation 1" = "1",
-                                 "2024 Simulation 2" = "2",
-                                 "2024 Simulation 3" = "3",
-                                 "2024 Simulation 4" = "4",
-                                 "2024 Simulation 5" = "5",
-                                 "2024 Simulation 6" = "6",
-                                 "2023 Affectation réelle" = "2023")),
-      
-      selectInput("specialty", "Choisis une spécialité",
-                  choices = specialties),
-      
-      selectInput("city", "Choisis une ville",
-                  choices = cities),
-      selectInput("dataset_compared", "Choisis un tour pour comparer",
-                  choices = list("2024 Simulation 1" = "1",
-                                 "2024 Simulation 2" = "2",
-                                 "2024 Simulation 3" = "3",
-                                 "2024 Simulation 4" = "4",
-                                 "2024 Simulation 5" = "5",
-                                 "2024 Simulation 6" = "6",
-                                 "2023 Affectation réelle" = "2023")),
-      numericInput("rangECN2024", "Entre ton rang des ECN 2024", value = 1),
-      actionButton("computeR2C", "Calcule ton rang R2C")
-    ),
-    
-    mainPanel(
-      # affiche les chiffres clés sur le poste
-      fluidRow(
-        valueBoxOutput("valueTotal", width = 4),
-        valueBoxOutput("valuePourvu", width = 4),
-        valueBoxOutput("valueDisponible", width = 4)
-      ),
-      fluidRow(
-        valueBoxOutput("valueRangLimite", width = 6),
-        # valueBoxOutput("valueRangLimiteAdapté", width = 6)
-      ),
-      tabsetPanel(
-        # affiche des graphiques et tables en lien avec la spécialité choisie
-        tabPanel("Spécialité", 
-                 plotOutput("plot1_specialty"),
-                 DT::dataTableOutput("table_specialty"),
-                 plotOutput("plot2_specialty")
-        ),
-        # affiche des graphiques et tables en lien avec la ville choisie
-        tabPanel("Ville", 
-                 plotOutput("plot1_city"),
-                 DT::dataTableOutput("table_city"),
-                 plotOutput("plot2_city")
-        ),
-        # affiche des graphiques et tables pour montrer l'évolution au fil des tours de simulation
-        tabPanel("Évolution",
-                 plotOutput("plot1_evolution"),
-                 DT::dataTableOutput("table1_evolution"),
-                 plotOutput("plot2_evolution"),
-                 DT::dataTableOutput("table2_evolution")),
-        # affiche les données brutes du tour de référence
-        tabPanel("Données brutes",
+                      sidebarLayout(
+                        # barre latérale pour choisir les données à afficher
+                        sidebarPanel(
+                          selectInput("dataset_reference", "Choisis un tour de référence",
+                                      choices = list("2024 Blanc 1" = "7",
+                                                     "2024 Simulation 1" = "1",
+                                                     "2024 Simulation 2" = "2",
+                                                     "2024 Simulation 3" = "3",
+                                                     "2024 Simulation 4" = "4",
+                                                     "2024 Simulation 5" = "5",
+                                                     "2024 Simulation 6" = "6",
+                                                     "2023 Affectation réelle" = "2023")),
+                          
+                          selectInput("specialty", "Choisis une spécialité",
+                                      choices = specialties),
+                          
+                          selectInput("city", "Choisis une ville",
+                                      choices = cities),
+                          selectInput("dataset_compared", "Choisis un tour pour comparer",
+                                      choices = list("2024 Blanc 1" = "7",
+                                                     "2024 Simulation 1" = "1",
+                                                     "2024 Simulation 2" = "2",
+                                                     "2024 Simulation 3" = "3",
+                                                     "2024 Simulation 4" = "4",
+                                                     "2024 Simulation 5" = "5",
+                                                     "2024 Simulation 6" = "6",
+                                                     "2023 Affectation réelle" = "2023")),
+                          numericInput("rangECN2024", "Entre ton rang des ECN 2024", value = 1),
+                          actionButton("computeR2C", "Calcule ton rang R2C")
+                        ),
+                        
+                        mainPanel(
+                          # affiche les chiffres clés sur le poste
+                          fluidRow(
+                            valueBoxOutput("valueTotal", width = 4),
+                            valueBoxOutput("valuePourvu", width = 4),
+                            valueBoxOutput("valueDisponible", width = 4)
+                          ),
+                          fluidRow(
+                            valueBoxOutput("valueRangLimite", width = 6),
+                            # valueBoxOutput("valueRangLimiteAdapté", width = 6)
+                          ),
+                          tabsetPanel(
+                            # affiche des graphiques et tables en lien avec la spécialité choisie
+                            tabPanel("Spécialité", 
+                                     plotOutput("plot1_specialty"),
+                                     DT::dataTableOutput("table_specialty"),
+                                     plotOutput("plot2_specialty")
+                            ),
+                            # affiche des graphiques et tables en lien avec la ville choisie
+                            tabPanel("Ville", 
+                                     plotOutput("plot1_city"),
+                                     DT::dataTableOutput("table_city"),
+                                     plotOutput("plot2_city")
+                            ),
+                            # affiche des graphiques et tables pour montrer l'évolution au fil des tours de simulation
+                            tabPanel("Évolution",
+                                     plotOutput("plot1_evolution"),
+                                     DT::dataTableOutput("table1_evolution"),
+                                     plotOutput("plot2_evolution"),
+                                     DT::dataTableOutput("table2_evolution")),
+                            # affiche les données brutes du tour de référence
+                            tabPanel("Données brutes",
                                      DT::dataTableOutput("table1_raw"))
                           )
                         )
                       )),
-        # donne des détails sur le projet
-        tabPanel("À propos",
+             # donne des détails sur le projet
+             tabPanel("À propos",
                       h2("Crédits"),
                       p(style = "text-align: justify;",
                         HTML("Application ShinyApp codée avec l'aide de ChatGPT sur RStudio avec les packages <code>dplyr</code> et <code>ggplot2</code>. Vous pouvez trouver l'intégralité du code sur <a href='https://github.com/NekoSama8723/matching-explorer-2024' target='_blank'>GitHub</a>.")
@@ -404,9 +411,9 @@ ui <- fluidPage(
                         ),
                       p(style = "text-align: justify;",
                         HTML("Les rangs 2023 sont difficilement comparables avec ceux de cette année pour au moins 2 raisons :
-<ul>
-  <li>il y a eu une réduction des postes ;</li>
-  <li>les classements 2024 incluent des coefficients et ne sont donc pas directement transposables en classement 2023.</li>
+                        <ul>
+                          <li>il y a eu une réduction des postes ;</li>
+                          <li>les classements 2024 incluent des coefficients et ne sont donc pas directement transposables en classement 2023.</li>
                       </ul>")
                       ),
                       p(style = "text-align: justify;",
@@ -416,7 +423,7 @@ ui <- fluidPage(
                       h2("Warning"),
                       p(style = "text-align: justify;",
                         "Il y a potentiellement des erreurs de codage, que ce soit dans la récupération, le traitement, ou l'affichage des données. La source la plus fiable reste l'application du CNG. Ne vous basez pas sur cette application si vous participez au matching 2024 !"
-                 )
+                        )
 )))
 
 # remplit les données de l'interface
@@ -462,7 +469,7 @@ server <- function(input, output, session) {
   output$valueRangLimiteAdapté <- renderValueBox({
     data <- datasetInput()
     rangLimite <- (data %>% filter(VilleShort == input$city & SpécialitéShort == input$specialty))$RangLimite
-    valueBox(value = round(rangLimite * 7423 / 9727),
+    valueBox(value = round(rangLimite * 7800 / 9727),
              subtitle = "Rang limite adapté")
   })
   
