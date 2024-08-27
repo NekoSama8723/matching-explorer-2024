@@ -13,6 +13,7 @@ data_2024_4 <- read.csv(file = "simulation-tour-4.csv", header = F)
 data_2024_5 <- read.csv(file = "simulation-tour-5.csv", header = F)
 data_2024_6 <- read.csv(file = "simulation-tour-6.csv", header = F)
 data_2024_blanc_1 <- read.csv(file = "simulation-tour-blanc-1.csv", header = F)
+data_2024_blanc_2 <- read.csv(file = "simulation-tour-blanc-2.csv", header = F)
 data_2023 <- read.csv(file = "rang-limites-2023.csv", header = F)
 
 nb_poste_2024 = 7689
@@ -221,6 +222,9 @@ data_2024_6_clean <- clean_data_2024(data_2024_6) %>%
 data_2024_blanc_1_clean <- clean_data_2024(data_2024_blanc_1) %>%
   mutate(Tour = 7)
 
+data_2024_blanc_2_clean <- clean_data_2024(data_2024_blanc_2) %>%
+  mutate(Tour = 8)
+
 data_main <- rbind(data_2023_clean, 
                    data_2024_1_clean, 
                    data_2024_2_clean, 
@@ -228,7 +232,8 @@ data_main <- rbind(data_2023_clean,
                    data_2024_4_clean,
                    data_2024_5_clean,
                    data_2024_6_clean,
-                   data_2024_blanc_1_clean)
+                   data_2024_blanc_1_clean,
+                   data_2024_blanc_2_clean)
 
 # prépare des listes pour les codes de villes et spécialités
 specialties <- sort(c(
@@ -322,6 +327,7 @@ ui <- fluidPage(
                         sidebarPanel(
                           selectInput("dataset_reference", "Choisis un tour de référence",
                                       choices = list("2024 Blanc 1" = "7",
+                                                     "2024 Blanc 2" = "8",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
@@ -337,6 +343,7 @@ ui <- fluidPage(
                                       choices = cities),
                           selectInput("dataset_compared", "Choisis un tour pour comparer",
                                       choices = list("2024 Blanc 1" = "7",
+                                                     "2024 Blanc 2" = "8",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
@@ -377,7 +384,8 @@ ui <- fluidPage(
                                      plotOutput("plot1_evolution"),
                                      DT::dataTableOutput("table1_evolution"),
                                      plotOutput("plot2_evolution"),
-                                     DT::dataTableOutput("table2_evolution")),
+                                     DT::dataTableOutput("table2_evolution"),
+                                     DT::dataTableOutput("table3_evolution")),
                             # affiche les données brutes du tour de référence
                             tabPanel("Données brutes",
                                      DT::dataTableOutput("table1_raw"))
@@ -595,6 +603,15 @@ server <- function(input, output, session) {
       group_by(Tour) %>%
       summarise(Spécialité = input$specialty, RangLimiteMax = max(RangLimite, na.rm = T), Total = sum(Total, na.rm = T), Disponible = sum(Disponible, na.rm = T)) %>%
       rename(`Rang limite` = RangLimiteMax)
+  })
+  
+  output$table3_evolution <- DT::renderDataTable({
+    data_1 <- datasetInput() %>% filter(SpécialitéShort == input$specialty)
+    data_2 <- datasetInputCompared() %>% filter(SpécialitéShort == input$specialty)
+    
+    data_fig <- data.frame(round(quantile(data_1$RangLimite - data_2$RangLimite, na.rm = T, probs=seq(0.1,1, by=0.1))))
+    names(data_fig) <- c("Déciles des variations de tous les rangs limite entre les 2 tours sélectionnés")
+    data_fig
   })
   
   # remplit l'onglet Données brutes
