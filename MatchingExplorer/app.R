@@ -14,6 +14,7 @@ data_2024_5 <- read.csv(file = "simulation-tour-5.csv", header = F)
 data_2024_6 <- read.csv(file = "simulation-tour-6.csv", header = F)
 data_2024_blanc_1 <- read.csv(file = "simulation-tour-blanc-1.csv", header = F)
 data_2024_blanc_2 <- read.csv(file = "simulation-tour-blanc-2.csv", header = F)
+data_2024_blanc_3 <- read.csv(file = "simulation-tour-blanc-3.csv", header = F)
 data_2023 <- read.csv(file = "rang-limites-2023.csv", header = F)
 
 nb_poste_2024 = 7689
@@ -225,6 +226,9 @@ data_2024_blanc_1_clean <- clean_data_2024(data_2024_blanc_1) %>%
 data_2024_blanc_2_clean <- clean_data_2024(data_2024_blanc_2) %>%
   mutate(Tour = 8)
 
+data_2024_blanc_3_clean <- clean_data_2024(data_2024_blanc_3) %>%
+  mutate(Tour = 9)
+
 data_main <- rbind(data_2023_clean, 
                    data_2024_1_clean, 
                    data_2024_2_clean, 
@@ -233,7 +237,8 @@ data_main <- rbind(data_2023_clean,
                    data_2024_5_clean,
                    data_2024_6_clean,
                    data_2024_blanc_1_clean,
-                   data_2024_blanc_2_clean)
+                   data_2024_blanc_2_clean,
+                   data_2024_blanc_3_clean)
 
 # prépare des listes pour les codes de villes et spécialités
 specialties <- sort(c(
@@ -328,6 +333,7 @@ ui <- fluidPage(
                           selectInput("dataset_reference", "Choisis un tour de référence",
                                       choices = list("2024 Blanc 1" = "7",
                                                      "2024 Blanc 2" = "8",
+                                                     "2024 Blanc 3" = "9",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
@@ -344,6 +350,7 @@ ui <- fluidPage(
                           selectInput("dataset_compared", "Choisis un tour pour comparer",
                                       choices = list("2024 Blanc 1" = "7",
                                                      "2024 Blanc 2" = "8",
+                                                     "2024 Blanc 3" = "9",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
