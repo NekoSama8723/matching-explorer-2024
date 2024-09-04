@@ -1,9 +1,10 @@
-library(shiny)
-library(shinydashboard)
-library(ggplot2)
-library(dplyr)
-library(rsconnect)
-library(shinythemes)
+library(shiny) # pour shiny
+library(shinydashboard) # pour shiny
+library(shinythemes) # pour le thème du shiny
+library(rsconnect) # pour mettre en ligne le shiny
+library(ggplot2) # pour les graphiques
+library(dplyr) # pour le traitemetn des données
+library(scales) # pour la fonction pretty_breaks()
 
 # charge les données
 data_2024_1 <- read.csv(file = "simulation-tour-1.csv", header = F)
@@ -15,6 +16,7 @@ data_2024_6 <- read.csv(file = "simulation-tour-6.csv", header = F)
 data_2024_blanc_1 <- read.csv(file = "simulation-tour-blanc-1.csv", header = F)
 data_2024_blanc_2 <- read.csv(file = "simulation-tour-blanc-2.csv", header = F)
 data_2024_blanc_3 <- read.csv(file = "simulation-tour-blanc-3.csv", header = F)
+data_2024_blanc_4 <- read.csv(file = "simulation-tour-blanc-4.csv", header = F)
 data_2023 <- read.csv(file = "rang-limites-2023.csv", header = F)
 
 nb_poste_2024 = 7689
@@ -229,6 +231,9 @@ data_2024_blanc_2_clean <- clean_data_2024(data_2024_blanc_2) %>%
 data_2024_blanc_3_clean <- clean_data_2024(data_2024_blanc_3) %>%
   mutate(Tour = 9)
 
+data_2024_blanc_4_clean <- clean_data_2024(data_2024_blanc_4) %>%
+  mutate(Tour = 10)
+
 data_main <- rbind(data_2023_clean, 
                    data_2024_1_clean, 
                    data_2024_2_clean, 
@@ -238,7 +243,8 @@ data_main <- rbind(data_2023_clean,
                    data_2024_6_clean,
                    data_2024_blanc_1_clean,
                    data_2024_blanc_2_clean,
-                   data_2024_blanc_3_clean)
+                   data_2024_blanc_3_clean,
+                   data_2024_blanc_4_clean)
 
 # prépare des listes pour les codes de villes et spécialités
 specialties <- sort(c(
@@ -334,6 +340,7 @@ ui <- fluidPage(
                                       choices = list("2024 Blanc 1" = "7",
                                                      "2024 Blanc 2" = "8",
                                                      "2024 Blanc 3" = "9",
+                                                     "2024 Blanc 4" = "10",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
@@ -351,6 +358,7 @@ ui <- fluidPage(
                                       choices = list("2024 Blanc 1" = "7",
                                                      "2024 Blanc 2" = "8",
                                                      "2024 Blanc 3" = "9",
+                                                     "2024 Blanc 4" = "10",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
@@ -434,6 +442,9 @@ ui <- fluidPage(
                       p(style = "text-align: justify;",
                         "J'ai donc utilisé un produit en croix pour adapter les rangs limites de 2023 (en utilisant le pourcentage de réductions pour chaque poste et non le pourcentage global). Je fais par conséquent l'hypothèse que les étudiant·e·s manquants se seraient équitablement réparti·e·s dans notre classement (hypothèse sûrement un peu fausse qui contribue à surestimer les rangs limites 2023). Une autre technique serait de prendre le rang du x-ième pris en 2023 (x étant le nombre de postes en 2024). Elle n'est pas implémentée pour le moment. Cela conduirait peut-être à une sous-estimation des rangs limites."
                         ),
+                      p(style = "text-align: justify;",
+                        "Pour le convertisseur de rang ECN 2024 en rang EDN 2024, j'ai simplement fait un produit en croix en prenant 9727 pour le nombre d'étudiant·e·s ECN 2023 et 7800 pour EDN 2024 (chiffres basés sur des conversations avec des personnes concernées)."
+                      ),
                       
                       h2("Warning"),
                       p(style = "text-align: justify;",
@@ -581,7 +592,8 @@ server <- function(input, output, session) {
              filter(Tour != 2023)) +
       geom_point(aes(x = Tour, y = RangLimite)) +
       geom_line(aes(x = Tour, y = RangLimite)) +
-      labs(y = "Rang limite", x = "Tour de simulation", title = paste(input$specialty, input$city, sep = " "))
+      labs(y = "Rang limite", x = "Tour de simulation", title = paste(input$specialty, input$city, sep = " ")) +
+      scale_x_continuous(breaks = breaks_pretty())
   })
   
   output$table1_evolution <- DT::renderDataTable({
@@ -600,7 +612,8 @@ server <- function(input, output, session) {
              summarise(RangLimiteMax = max(RangLimite, na.rm = T))) +
       geom_point(aes(x = Tour, y = RangLimiteMax)) +
       geom_line(aes(x = Tour, y = RangLimiteMax)) +
-      labs(y = "Rang limite", x = "Tour de simulation", title = paste(input$specialty, "au national", sep = " "))
+      labs(y = "Rang limite", x = "Tour de simulation", title = paste(input$specialty, "au national", sep = " ")) +
+      scale_x_continuous(breaks = breaks_pretty())
   })
   
   output$table2_evolution <- DT::renderDataTable({
