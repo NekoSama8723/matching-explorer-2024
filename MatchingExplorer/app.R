@@ -18,6 +18,7 @@ data_2024_blanc_2 <- read.csv(file = "simulation-tour-blanc-2.csv", header = F)
 data_2024_blanc_3 <- read.csv(file = "simulation-tour-blanc-3.csv", header = F)
 data_2024_blanc_4 <- read.csv(file = "simulation-tour-blanc-4.csv", header = F)
 data_2024_blanc_5 <- read.csv(file = "simulation-tour-blanc-5.csv", header = F)
+data_2024_blanc_6 <- read.csv(file = "simulation-tour-blanc-6.csv", header = F)
 data_2023 <- read.csv(file = "rang-limites-2023.csv", header = F)
 
 nb_poste_2024 = 7689
@@ -238,6 +239,9 @@ data_2024_blanc_4_clean <- clean_data_2024(data_2024_blanc_4) %>%
 data_2024_blanc_5_clean <- clean_data_2024(data_2024_blanc_5) %>%
   mutate(Tour = 11)
 
+data_2024_blanc_6_clean <- clean_data_2024(data_2024_blanc_6) %>%
+  mutate(Tour = 12)
+
 data_main <- rbind(data_2023_clean, 
                    data_2024_1_clean, 
                    data_2024_2_clean, 
@@ -249,7 +253,8 @@ data_main <- rbind(data_2023_clean,
                    data_2024_blanc_2_clean,
                    data_2024_blanc_3_clean,
                    data_2024_blanc_4_clean,
-                   data_2024_blanc_5_clean)
+                   data_2024_blanc_5_clean,
+                   data_2024_blanc_6_clean)
 
 # prépare des listes pour les codes de villes et spécialités
 specialties <- sort(c(
@@ -347,6 +352,7 @@ ui <- fluidPage(
                                                      "2024 Blanc 3" = "9",
                                                      "2024 Blanc 4" = "10",
                                                      "2024 Blanc 5" = "11",
+                                                     "2024 Blanc 6" = "12",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
@@ -366,6 +372,7 @@ ui <- fluidPage(
                                                      "2024 Blanc 3" = "9",
                                                      "2024 Blanc 4" = "10",
                                                      "2024 Blanc 5" = "11",
+                                                     "2024 Blanc 6" = "12",
                                                      "2024 Simulation 1" = "1",
                                                      "2024 Simulation 2" = "2",
                                                      "2024 Simulation 3" = "3",
