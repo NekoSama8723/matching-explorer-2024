@@ -19,6 +19,7 @@ data_2024_blanc_3 <- read.csv(file = "simulation-tour-blanc-3.csv", header = F)
 data_2024_blanc_4 <- read.csv(file = "simulation-tour-blanc-4.csv", header = F)
 data_2024_blanc_5 <- read.csv(file = "simulation-tour-blanc-5.csv", header = F)
 data_2024_blanc_6 <- read.csv(file = "simulation-tour-blanc-6.csv", header = F)
+data_2024_def_1 <- read.csv(file = "simulation-tour-definitif-1.csv", header = F)
 data_2023 <- read.csv(file = "rang-limites-2023.csv", header = F)
 
 nb_poste_2024 = 7689
@@ -242,6 +243,9 @@ data_2024_blanc_5_clean <- clean_data_2024(data_2024_blanc_5) %>%
 data_2024_blanc_6_clean <- clean_data_2024(data_2024_blanc_6) %>%
   mutate(Tour = 12)
 
+data_2024_def_1_clean <- clean_data_2024(data_2024_def_1) %>%
+  mutate(Tour = 13)
+
 data_main <- rbind(data_2023_clean, 
                    data_2024_1_clean, 
                    data_2024_2_clean, 
@@ -254,7 +258,8 @@ data_main <- rbind(data_2023_clean,
                    data_2024_blanc_3_clean,
                    data_2024_blanc_4_clean,
                    data_2024_blanc_5_clean,
-                   data_2024_blanc_6_clean)
+                   data_2024_blanc_6_clean,
+                   data_2024_def_1_clean)
 
 # prépare des listes pour les codes de villes et spécialités
 specialties <- sort(c(
@@ -347,7 +352,8 @@ ui <- fluidPage(
                         # barre latérale pour choisir les données à afficher
                         sidebarPanel(
                           selectInput("dataset_reference", "Choisis un tour de référence",
-                                      choices = list("2024 Blanc 1" = "7",
+                                      choices = list("2024 Définitif 1" = "13",
+                                                     "2024 Blanc 1" = "7",
                                                      "2024 Blanc 2" = "8",
                                                      "2024 Blanc 3" = "9",
                                                      "2024 Blanc 4" = "10",
@@ -367,7 +373,8 @@ ui <- fluidPage(
                           selectInput("city", "Choisis une ville",
                                       choices = cities),
                           selectInput("dataset_compared", "Choisis un tour pour comparer",
-                                      choices = list("2024 Blanc 1" = "7",
+                                      choices = list("2024 Définitif 1" = "13",
+                                                     "2024 Blanc 1" = "7",
                                                      "2024 Blanc 2" = "8",
                                                      "2024 Blanc 3" = "9",
                                                      "2024 Blanc 4" = "10",
