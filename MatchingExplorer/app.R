@@ -424,9 +424,11 @@ ui <- fluidPage(
                                      DT::dataTableOutput("table3_evolution")),
                             # affiche les données brutes du tour de référence
                             tabPanel("Données brutes",
-                                     DT::dataTableOutput("table1_raw"))
+                                     DT::dataTableOutput("table1_raw")),
+                            tabPanel("Popularité",
+                                     DT::dataTableOutput("table1_popularite"))
                           )
-                        )
+                          ),
                       )),
              # donne des détails sur le projet
              tabPanel("À propos",
@@ -441,7 +443,7 @@ ui <- fluidPage(
                       
                       h2("Mise à jour"),
                       p(style = "text-align: justify;",
-                        "Dernière mise à jour le vendredi 16 août 2024."
+                        "Dernière mise à jour le vendredi 13 septembre 2024."
                         ),
                       
                       h2("Helth"),
@@ -470,8 +472,13 @@ ui <- fluidPage(
                       h2("Warning"),
                       p(style = "text-align: justify;",
                         "Il y a potentiellement des erreurs de codage, que ce soit dans la récupération, le traitement, ou l'affichage des données. La source la plus fiable reste l'application du CNG. Ne vous basez pas sur cette application si vous participez au matching 2024 !"
-                        )
-)))
+                        ),
+                      
+                      h2("Populaire"),
+                      p(style = "text-align: justify;",
+                        HTML("Cet outil n'est pas adapté à déterminer la popularité de votre spécialité ou de votre ville. Premièrement pour toutes les raisons sus-évoquées, les rangs limites de cette année sont difficilement comparables avec ceux des années précédentes. Deuxièmement, il convient de rappeler que l'analyse des rangs limites sans tenir compte du nombre de postes ouverts a peu de sens. Alexandre Ghazi a proposé une méthode intéressante sur <a href='https://x.com/AlexandreGhazi/status/1439578580380528643' target='_blank'>Twitter</a> qui a ensuite été implémenté par <a href='https://x.com/MrFDA69/status/1439625463467544582' target='_blank'>MrFDA</a>. Par curiosité, elle est implémentée dans l'onglet Populaire pour le jeu de données choisi."))
+                  ))
+)
 
 # remplit les données de l'interface
 server <- function(input, output, session) {
@@ -663,9 +670,40 @@ server <- function(input, output, session) {
       rename(`Code ville` = VilleShort) %>%
       rename(`Rang major` = RangPremier)
   })
+  
+  # remplit l'onglet Popularité
+  
+  output$table1_popularite <- DT::renderDataTable({
+    data_rang_limite_theorique <- datasetInput() %>%
+      group_by(Spécialité) %>%
+      summarise(Total = sum(Total), RangLimiteReel = max(RangLimite, na.rm = T)) %>%
+      arrange(Total) %>%
+      mutate(RangLimiteTheorique = 0)
+    
+    spe_dispo <- nrow(data_rang_limite_theorique) - 1
+    poste_parti <- data_rang_limite_theorique[1,"Total"]
+    data_rang_limite_theorique[1, "RangLimiteTheorique"] = data_rang_limite_theorique[1,"Total"]*nrow(data_rang_limite_theorique)
+    
+    for (row in 2:nrow(data_rang_limite_theorique)) {
+      data_rang_limite_theorique[row,"RangLimiteTheorique"] = data_rang_limite_theorique[row-1,"RangLimiteTheorique"] + (data_rang_limite_theorique[row,"Total"] - poste_parti)*spe_dispo
+      
+      spe_dispo <- spe_dispo - 1
+      poste_parti <- data_rang_limite_theorique[row,"Total"]
+    }
+    
+    data_rang_limite_theorique %>%
+      # mutate(Populaire = RangLimiteReel < RangLimiteTheorique) %>%
+      mutate(Surprise = round((RangLimiteReel-RangLimiteTheorique)/RangLimiteTheorique*100)) %>%
+      rename(`Postes ouverts` = Total) %>%
+      rename(`Rang limite réel` = RangLimiteReel) %>%
+      rename(`Rang limite théorique` = RangLimiteTheorique) %>%
+      rename(`Différence relative (en %)` = Surprise)
+      
+  })
 
 }
 
 
 # et zé parti
 shinyApp(ui = ui, server = server)
+
