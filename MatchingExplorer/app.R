@@ -3,8 +3,9 @@ library(shinydashboard) # pour shiny
 library(shinythemes) # pour le thème du shiny
 library(rsconnect) # pour mettre en ligne le shiny
 library(ggplot2) # pour les graphiques
-library(dplyr) # pour le traitemetn des données
+library(dplyr) # pour le traitement des données
 library(scales) # pour la fonction pretty_breaks()
+library(plotly) # pour des tooltips
 
 # charge les données
 data_2024_1 <- read.csv(file = "simulation-tour-1.csv", header = F)
@@ -405,21 +406,21 @@ ui <- fluidPage(
                           tabsetPanel(
                             # affiche des graphiques et tables en lien avec la spécialité choisie
                             tabPanel("Spécialité", 
-                                     plotOutput("plot1_specialty"),
+                                     plotlyOutput("plot1_specialty"),
                                      DT::dataTableOutput("table_specialty"),
-                                     plotOutput("plot2_specialty")
+                                     plotlyOutput("plot2_specialty")
                             ),
                             # affiche des graphiques et tables en lien avec la ville choisie
                             tabPanel("Ville", 
-                                     plotOutput("plot1_city"),
+                                     plotlyOutput("plot1_city"),
                                      DT::dataTableOutput("table_city"),
-                                     plotOutput("plot2_city")
+                                     plotlyOutput("plot2_city")
                             ),
                             # affiche des graphiques et tables pour montrer l'évolution au fil des tours de simulation
                             tabPanel("Évolution",
-                                     plotOutput("plot1_evolution"),
+                                     plotlyOutput("plot1_evolution"),
                                      DT::dataTableOutput("table1_evolution"),
-                                     plotOutput("plot2_evolution"),
+                                     plotlyOutput("plot2_evolution"),
                                      DT::dataTableOutput("table2_evolution"),
                                      DT::dataTableOutput("table3_evolution")),
                             # affiche les données brutes du tour de référence
@@ -534,13 +535,14 @@ server <- function(input, output, session) {
   })
   
   # remplit l'onglet Spécialité
-  output$plot1_specialty <- renderPlot({
+  output$plot1_specialty <- renderPlotly({
     data <- datasetInput()
-    ggplot(data = data %>% 
+    plot <- ggplot(data = data %>% 
              filter(SpécialitéShort == input$specialty & !is.na(RangLimite)), 
-           aes(x = reorder(VilleShort, RangLimite), y = RangLimite)) +
+           aes(x = reorder(VilleShort, RangLimite), y = RangLimite, text = paste0("Rang limite à ", Ville, " : ", RangLimite))) +
       geom_point() +
       labs(y = "Rang limite", x = "Ville", title = input$specialty)
+    ggplotly(plot, tooltip = "text")
   })
   
   output$table_specialty <- DT::renderDataTable({
@@ -550,13 +552,14 @@ server <- function(input, output, session) {
       rename(`Rang limite` = RangLimite)
   })
   
-  output$plot2_specialty <- renderPlot({
+  output$plot2_specialty <- renderPlotly({
     data_1 <- datasetInput() %>% filter(SpécialitéShort == input$specialty)
     data_2 <- datasetInputCompared() %>% filter(SpécialitéShort == input$specialty)
     data_fig <- data_1 %>%
       group_by(VilleShort) %>%
       summarise(RangLimite1 = max(RangLimite, na.rm = T),
-                Total1 = sum(Total, na.rm = T)) %>%
+                Total1 = sum(Total, na.rm = T),
+                Ville = Ville) %>%
       mutate(RangLimite2 = (data_2 %>%
                               group_by(VilleShort) %>%
                               summarise(RangLimite2 = max(RangLimite, na.rm = T)))$RangLimite2) %>%
@@ -567,20 +570,22 @@ server <- function(input, output, session) {
       mutate(Below2 = ifelse(RangLimite1 < RangLimiteAdapté2, "↙", "↗")) %>%
       filter(RangLimite1 != -Inf)
     
-    ggplot(data = data_fig) +
-      geom_point(aes(x = reorder(VilleShort, RangLimite1), y = RangLimite1)) +
-      geom_point(aes(x = reorder(VilleShort, RangLimite1), y = RangLimiteAdapté2, color = Below2)) +
+    plot <- ggplot(data = data_fig) +
+      geom_point(aes(x = reorder(VilleShort, RangLimite1), y = RangLimite1, text = paste0("Rang limite de référence à ", Ville, " : ", RangLimite1))) +
+      geom_point(aes(x = reorder(VilleShort, RangLimite1), y = RangLimiteAdapté2, color = Below2, text = paste0("Rang limite comparé à ", Ville, " : ", RangLimiteAdapté2))) +
       labs(y = "Rang limite", x = "Ville", color = "", title = input$specialty)
+    ggplotly(plot, tooltip = "text")
   })
   
   # remplit l'onglet Ville
-  output$plot1_city <- renderPlot({
+  output$plot1_city <- renderPlotly({
     data <- datasetInput()
-    ggplot(data = data %>% 
+    plot <- ggplot(data = data %>% 
              filter(VilleShort == input$city & !is.na(RangLimite)), 
-           aes(x = reorder(SpécialitéShort, RangLimite), y = RangLimite)) +
+           aes(x = reorder(SpécialitéShort, RangLimite), y = RangLimite, text = paste0("Rang limite pour ", Spécialité, " : ", RangLimite))) +
       geom_point() +
       labs(y = "Rang limite", x = "Spécialité", title = input$city)
+    ggplotly(plot, tooltip = "text")
   })
   
   output$table_city <- DT::renderDataTable({
@@ -590,13 +595,14 @@ server <- function(input, output, session) {
       rename(`Rang limite` = RangLimite)
   })
   
-  output$plot2_city <- renderPlot({
+  output$plot2_city <- renderPlotly({
     data_1 <- datasetInput() %>% filter(VilleShort == input$city)
     data_2 <- datasetInputCompared() %>% filter(VilleShort == input$city)
     data_fig <- data_1 %>%
       group_by(SpécialitéShort) %>%
       summarise(RangLimite1 = max(RangLimite, na.rm = T),
-                Total1 = sum(Total, na.rm = T)) %>%
+                Total1 = sum(Total, na.rm = T),
+                Spécialité = Spécialité) %>%
       mutate(RangLimite2 = (data_2 %>%
                               group_by(SpécialitéShort) %>%
                               summarise(RangLimite2 = max(RangLimite, na.rm = T)))$RangLimite2) %>%
@@ -607,21 +613,23 @@ server <- function(input, output, session) {
       mutate(Below2 = ifelse(RangLimite1 < RangLimiteAdapté2, "↙", "↗")) %>%
       filter(RangLimite1 != -Inf)
     
-    ggplot(data = data_fig) +
-      geom_point(aes(x = reorder(SpécialitéShort, RangLimite1), y = RangLimite1)) +
-      geom_point(aes(x = reorder(SpécialitéShort, RangLimite1), y = RangLimiteAdapté2, color = Below2)) +
+    plot <- ggplot(data = data_fig) +
+      geom_point(aes(x = reorder(SpécialitéShort, RangLimite1), y = RangLimite1, text = paste0("Rang limite de référence pour ", Spécialité, " : ", RangLimite1))) +
+      geom_point(aes(x = reorder(SpécialitéShort, RangLimite1), y = RangLimiteAdapté2, color = Below2, text = paste0("Rang limite comparé pour ", Spécialité, " : ", RangLimiteAdapté2))) +
       labs(y = "Rang limite", x = "Spécialités", color = "", title = input$city)
+    ggplotly(plot, tooltip = "text")
   })
   
   # remplit l'onglet Évolution
-  output$plot1_evolution <- renderPlot({
-    ggplot(data = data_main %>% 
+  output$plot1_evolution <- renderPlotly({
+    plot<- ggplot(data = data_main %>% 
              filter(VilleShort == input$city & SpécialitéShort == input$specialty) %>%
              filter(Tour != 2023)) +
-      geom_point(aes(x = Tour, y = RangLimite)) +
+      geom_point(aes(x = Tour, y = RangLimite, text = paste0("Rang limite local au tour ", Tour, " : ", RangLimite))) +
       geom_line(aes(x = Tour, y = RangLimite)) +
       labs(y = "Rang limite", x = "Tour de simulation", title = paste(input$specialty, input$city, sep = " ")) +
       scale_x_continuous(breaks = breaks_pretty())
+    ggplotly(plot, tooltip = "text")
   })
   
   output$table1_evolution <- DT::renderDataTable({
@@ -632,16 +640,17 @@ server <- function(input, output, session) {
       rename(`Rang limite` = RangLimite)
   })
   
-  output$plot2_evolution <- renderPlot({
-    ggplot(data = data_main %>% 
+  output$plot2_evolution <- renderPlotly({
+    plot <- ggplot(data = data_main %>% 
              filter(SpécialitéShort == input$specialty) %>%
              filter(Tour != 2023) %>%
              group_by(Tour) %>%
              summarise(RangLimiteMax = max(RangLimite, na.rm = T))) +
-      geom_point(aes(x = Tour, y = RangLimiteMax)) +
+      geom_point(aes(x = Tour, y = RangLimiteMax, text = paste0("Rang limite national au tour ", Tour, " : ", RangLimiteMax))) +
       geom_line(aes(x = Tour, y = RangLimiteMax)) +
       labs(y = "Rang limite", x = "Tour de simulation", title = paste(input$specialty, "au national", sep = " ")) +
       scale_x_continuous(breaks = breaks_pretty())
+    ggplotly(plot, tooltip = "text")
   })
   
   output$table2_evolution <- DT::renderDataTable({
